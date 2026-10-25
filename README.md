@@ -14,7 +14,7 @@ Windows B 站（bilibili）视频 / 音频下载器，C#/.NET 9 WPF 实现。
 
 ## 使用
 
-1. 从 [Releases](../../releases) 下载 `BLDownload.exe` 直接运行（.NET 9 自包含，无需安装运行时）
+1. 从 [Releases](../../releases) 下载**单文件** `BLDownload.exe` 双击即用（自包含 .NET 9，无需安装运行时）
 2. 粘贴分享链接 → 解析 → 选择输出格式与清晰度 → 下载
 3. 需要 1080P/4K 时点击右上角"登录"扫码
 
