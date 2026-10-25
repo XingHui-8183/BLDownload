@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="BLDownload.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="B 站登录" Height="500" Width="340"
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        Background="#17181C" Foreground="#E8EAED">
+    <Window.Resources>
+        <SolidColorBrush x:Key="Accent" Color="#00A1D6"/>
+        <SolidColorBrush x:Key="Line" Color="#33363E"/>
+        <SolidColorBrush x:Key="Field" Color="#2A2D34"/>
+        <SolidColorBrush x:Key="InkSub" Color="#9AA0A8"/>
+
+        <Style x:Key="LinkBtn" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#33B4DE"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <TextBlock Text="{TemplateBinding Content}" TextDecorations="Underline"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <StackPanel Margin="20,18,20,16">
+        <TextBlock Text="扫码登录 B 站" FontSize="16" FontWeight="Bold"/>
+        <TextBlock Text="解锁 1080P 及以上清晰度（大会员可下 4K）"
+                   FontSize="11" Foreground="{StaticResource InkSub}" Margin="0,3,0,0"/>
+
+        <Border Background="White" CornerRadius="8" Width="238" Height="238"
+                Margin="0,14,0,0" HorizontalAlignment="Center">
+            <Grid>
+                <Image x:Name="QrImage" Width="218" Height="218"/>
+                <Border x:Name="QrMask" Background="#E6FFFFFF" Visibility="Collapsed">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="MaskText" Text="二维码已过期" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="#333" HorizontalAlignment="Center"/>
+                        <Button Content="点击刷新" Style="{StaticResource LinkBtn}" Click="Refresh_Click" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <TextBlock x:Name="StatusText" Text="正在生成二维码…" FontSize="12"
+                   Foreground="{StaticResource InkSub}" TextAlignment="Center" Margin="0,12,0,0"/>
+
+        <Button x:Name="CookieToggle" Content="无法扫码？粘贴 Cookie 登录" FontSize="11"
+                Style="{StaticResource LinkBtn}" Click="CookieToggle_Click" Margin="0,10,0,0"/>
+        <StackPanel x:Name="CookiePanel" Visibility="Collapsed" Margin="0,10,0,0">
+            <TextBox x:Name="CookieBox" Height="60" AcceptsReturn="True" TextWrapping="Wrap"
+                     Background="{StaticResource Field}" Foreground="#E8EAED" CaretBrush="#E8EAED"
+                     BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="8,6"
+                     FontSize="11" VerticalScrollBarVisibility="Auto">
+                <TextBox.Template>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </TextBox.Template>
+            </TextBox>
+            <TextBlock Text="从浏览器 F12 → Application → Cookies 复制 SESSDATA 等字段整串粘贴"
+                       FontSize="10" Foreground="{StaticResource InkSub}" Margin="2,4,0,0"/>
+            <Button Content="使用 Cookie 登录" Click="CookieOk_Click" Margin="0,8,0,0"
+                    HorizontalAlignment="Center" Padding="16,6" Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{StaticResource Accent}" CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+    </StackPanel>
+</Window>

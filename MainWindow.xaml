@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="BLDownload.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:BLDownload"
+        Title="BLDownload" Height="680" Width="960"
+        MinHeight="540" MinWidth="780"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        Background="#17181C" Foreground="#E8EAED"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="ClearType"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <!-- 调色板：bilibili 蓝主色 + 色调分层（Fluent 风格，不用投影） -->
+        <SolidColorBrush x:Key="Bg"          Color="#17181C"/>
+        <SolidColorBrush x:Key="CardBgBrush" Color="#212329"/>
+        <SolidColorBrush x:Key="CardHover"   Color="#26282F"/>
+        <SolidColorBrush x:Key="Field"       Color="#2A2D34"/>
+        <SolidColorBrush x:Key="Line"        Color="#33363E"/>
+        <SolidColorBrush x:Key="Ink"         Color="#E8EAED"/>
+        <SolidColorBrush x:Key="InkSub"      Color="#9AA0A8"/>
+        <SolidColorBrush x:Key="Accent"      Color="#00A1D6"/>
+        <SolidColorBrush x:Key="AccentHi"    Color="#33B4DE"/>
+        <SolidColorBrush x:Key="Danger"      Color="#5A3030"/>
+
+        <FontFamily x:Key="FluentIcon">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
+        <!-- 主按钮 -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Accent}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentHi}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Background" Value="#31343B"/>
+                                <Setter Property="Foreground" Value="#6C7178"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 幽灵按钮（次级操作） -->
+        <Style x:Key="GhostButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource Line}" BorderThickness="1"
+                                CornerRadius="5" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource CardHover}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 危险按钮（取消） -->
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="{StaticResource Danger}"/>
+        </Style>
+
+        <!-- 输入框 -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource Field}"/>
+            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource Ink}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 下拉框（完整深色模板） -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton" Focusable="False" ClickMode="Press"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="Bd" Background="{StaticResource Field}"
+                                                BorderBrush="{StaticResource Line}" BorderThickness="1"
+                                                CornerRadius="6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="30"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="1" Text="&#xE70D;"
+                                                           FontFamily="{StaticResource FluentIcon}" FontSize="10"
+                                                           Foreground="{StaticResource InkSub}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              Margin="12,0,34,0"
+                                              VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <Popup x:Name="PART_Popup" Placement="Bottom" AllowsTransparency="True"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}" Focusable="False"
+                                   PopupAnimation="Slide">
+                                <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource Line}"
+                                        BorderThickness="1" CornerRadius="6" MinWidth="200" MaxHeight="260"
+                                        Margin="0,4,0,0">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="4" Margin="4,1"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource CardHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#2A3F4A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 复选框（Fluent 方框 + 对勾） -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal" Background="Transparent">
+                            <Border x:Name="Box" Width="20" Height="20" CornerRadius="4"
+                                    Background="{StaticResource Field}"
+                                    BorderBrush="{StaticResource Line}" BorderThickness="1"
+                                    VerticalAlignment="Center">
+                                <TextBlock x:Name="Check" Text="&#xE73E;" FontSize="12" Foreground="White"
+                                           FontFamily="{StaticResource FluentIcon}"
+                                           Visibility="Collapsed"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ContentPresenter Margin="10,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="{StaticResource Accent}"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                                <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentHi}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 进度条：轨道 + 主色渐变指示器 -->
+        <Style TargetType="ProgressBar">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Border CornerRadius="4" Background="#31343B">
+                            <Border x:Name="PART_Indicator" CornerRadius="4" HorizontalAlignment="Left">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#00A1D6" Offset="0"/>
+                                        <GradientStop Color="#4FC3E8" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 卡片容器 -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBgBrush}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="14"/>
+        </Style>
+
+        <!-- 卡片标题（图标+文字） -->
+        <Style x:Key="CardTitle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource InkSub}"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20,16,20,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 品牌头部 + 登录区 -->
+        <Grid Grid.Row="0" Margin="2,0,0,14">
+            <StackPanel Orientation="Horizontal">
+                <Border Width="34" Height="34" CornerRadius="8" Background="{StaticResource Accent}">
+                    <TextBlock Text="&#xE896;" FontFamily="{StaticResource FluentIcon}" FontSize="16"
+                               Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="BLDownload" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock Text="B 站视频下载器 · 作者 XingHui-8183 · 粘贴链接即可下载"
+                               FontSize="11" Foreground="{StaticResource InkSub}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- 未登录：登录按钮 -->
+            <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Style="{StaticResource GhostButton}" Command="{Binding LoginCommand}"
+                    Visibility="{Binding IsLoggedIn, Converter={x:Static local:ObjectToBoolConverter.ToCollapsed}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE77B;" FontFamily="{StaticResource FluentIcon}" FontSize="13" Margin="0,0,7,0"/>
+                    <TextBlock Text="登录 B 站"/>
+                </StackPanel>
+            </Button>
+
+            <!-- 已登录：用户名 + 退出 -->
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal"
+                        Visibility="{Binding IsLoggedIn, Converter={x:Static local:ObjectToBoolConverter.ToVisible}}">
+                <Border Background="#223038" CornerRadius="14" Padding="10,4" Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE77B;" FontFamily="{StaticResource FluentIcon}" FontSize="12"
+                                   Foreground="{StaticResource AccentHi}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding UserName}" FontSize="12" Foreground="{StaticResource Ink}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                <Button Style="{StaticResource GhostButton}" Command="{Binding LogoutCommand}" Padding="8,4">
+                    <TextBlock Text="退出" FontSize="12"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- 链接输入 -->
+        <Border Grid.Row="1" Style="{StaticResource Card}">
+            <DockPanel LastChildFill="True">
+                <Button x:Name="ParseBtn" DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}"
+                        Command="{Binding ParseCommand}" Margin="10,0,0,0"
+                        IsEnabled="{Binding IsBusy, Converter={x:Static local:ObjectToBoolConverter.Invert}}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE721;" FontFamily="{StaticResource FluentIcon}" FontSize="13" Margin="0,0,7,0"/>
+                        <TextBlock Text="{Binding IsBusy, Converter={x:Static local:BusyTextConverter.Instance}}"/>
+                    </StackPanel>
+                </Button>
+                <Border Background="{StaticResource Field}" CornerRadius="6"
+                        BorderBrush="{StaticResource Line}" BorderThickness="1">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Left" Text="&#xE71B;" FontFamily="{StaticResource FluentIcon}"
+                                   FontSize="14" Foreground="{StaticResource InkSub}"
+                                   VerticalAlignment="Center" Margin="11,0,8,0"/>
+                        <Grid>
+                            <TextBox BorderThickness="0" Background="Transparent"
+                                     Text="{Binding LinkInput, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="粘贴 B 站链接或整段分享文本（中文、b23.tv 短链、BV/av 号均可）"
+                                       Foreground="#5E636B" IsHitTestVisible="False"
+                                       VerticalAlignment="Center" Margin="11,0,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding LinkInput}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </DockPanel>
+                </Border>
+            </DockPanel>
+        </Border>
+
+        <!-- 视频信息 / 清晰度 / 保存目录 -->
+        <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,10,0,0"
+                Visibility="{Binding HasResult, Converter={x:Static local:ObjectToBoolConverter.ToVisible}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="118"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="190"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock FontSize="11" Foreground="{StaticResource AccentHi}" Margin="0,0,0,2">
+                        <Run Text="&#xE714;" FontFamily="{StaticResource FluentIcon}"/><Run Text=" 视频标题"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding VideoTitle}" FontSize="14" FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+
+                <TextBlock Grid.Column="1" Text="输出" Style="{StaticResource CardTitle}"
+                           VerticalAlignment="Center" Margin="18,0,8,0"/>
+                <ComboBox x:Name="FormatCombo" Grid.Column="2" VerticalAlignment="Center"
+                          ItemsSource="{Binding OutputFormats}" SelectedItem="{Binding SelectedOutputFormat}"/>
+
+                <TextBlock Grid.Column="3" Text="清晰度" Style="{StaticResource CardTitle}"
+                           VerticalAlignment="Center" Margin="18,0,8,0"/>
+                <ComboBox x:Name="QualityCombo" Grid.Column="4" VerticalAlignment="Center"
+                          ItemsSource="{Binding Qualities}" SelectedItem="{Binding SelectedQuality}"/>
+
+                <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <Button Style="{StaticResource GhostButton}" Command="{Binding BrowseFolderCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource FluentIcon}" FontSize="12" Margin="0,0,6,0"/>
+                            <TextBlock>
+                                <Run Text="保存至 "/><Run Text="{Binding DownloadFolder, Mode=OneWay}"
+                                                 FontSize="11" Foreground="{StaticResource InkSub}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource GhostButton}" Command="{Binding OpenFolderCommand}"
+                            Margin="8,0,0,0" Padding="8,5" ToolTip="打开保存目录">
+                        <TextBlock Text="&#xE8A7;" FontFamily="{StaticResource FluentIcon}" FontSize="12"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 主体：分P列表 + 下载队列 -->
+        <Grid Grid.Row="3" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="330"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 空状态引导 -->
+            <TextBlock Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{StaticResource InkSub}" FontSize="13" TextAlignment="Center"
+                       Visibility="{Binding HasResult, Converter={x:Static local:ObjectToBoolConverter.ToCollapsed}}">
+                <Run Text="还没有解析任何视频" FontSize="15"/><LineBreak/>
+                <Run Text="粘贴一个 B 站链接，点上方「解析」，勾选分P、选清晰度即可批量下载" FontSize="12"/>
+            </TextBlock>
+
+            <Border Grid.Column="0" Style="{StaticResource Card}"
+                    Visibility="{Binding HasResult, Converter={x:Static local:ObjectToBoolConverter.ToVisible}}">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="2,0,0,10">
+                        <TextBlock Style="{StaticResource CardTitle}">
+                            <Run Text="&#xE714;  " FontFamily="{StaticResource FluentIcon}"/><Run Text="分P / 剧集"/>
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="全选" Command="{Binding SelectAllPagesCommand}"
+                                    Style="{StaticResource GhostButton}" Padding="8,3" Margin="0,0,6,0"/>
+                            <Button Content="清空" Command="{Binding DeselectAllPagesCommand}"
+                                    Style="{StaticResource GhostButton}" Padding="8,3"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Pages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="6" Padding="8,6" Margin="0,2" Background="Transparent">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="{StaticResource CardHover}"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Display}"
+                                                  FontSize="12"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}"
+                    Visibility="{Binding HasResult, Converter={x:Static local:ObjectToBoolConverter.ToVisible}}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource CardTitle}" Margin="2,0,0,10">
+                        <Run Text="&#xE896;  " FontFamily="{StaticResource FluentIcon}"/><Run Text="下载队列"/>
+                    </TextBlock>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Tasks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource Field}" CornerRadius="6"
+                                            Padding="10,8" Margin="0,3">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Name}" FontSize="12"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Progress, StringFormat=P0}"
+                                                           FontSize="12" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource AccentHi}" Margin="10,0,0,0"/>
+                                            </Grid>
+                                            <ProgressBar Value="{Binding Progress}" Maximum="1" Height="6"
+                                                         Margin="0,7,0,0"/>
+                                            <TextBlock Text="{Binding Status}" FontSize="11"
+                                                       Foreground="{StaticResource InkSub}" Margin="0,5,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- 底部操作栏 -->
+        <Border Grid.Row="4" Style="{StaticResource Card}" Margin="0,10,0,0" Padding="14,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="260"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center"
+                           Foreground="{StaticResource InkSub}" FontSize="12"
+                           TextTrimming="CharacterEllipsis"/>
+                <Grid Grid.Column="1" Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ProgressBar Value="{Binding OverallProgress}" Maximum="1" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="{Binding OverallProgress, StringFormat=P0}"
+                               FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource AccentHi}"
+                               VerticalAlignment="Center" Margin="10,0,0,0" MinWidth="38"/>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button x:Name="DownloadBtn" Style="{StaticResource PrimaryButton}" Command="{Binding DownloadCommand}"
+                            IsEnabled="{Binding IsDownloading, Converter={x:Static local:ObjectToBoolConverter.Invert}}"
+                            Visibility="{Binding HasResult, Converter={x:Static local:ObjectToBoolConverter.ToVisible}}"
+                            Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE896;" FontFamily="{StaticResource FluentIcon}" FontSize="13" Margin="0,0,7,0"/>
+                            <TextBlock Text="开始下载"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource DangerButton}" Command="{Binding CancelCommand}"
+                            Content="取消"
+                            Visibility="{Binding IsDownloading, Converter={x:Static local:ObjectToBoolConverter.ToVisible}}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
